@@ -1,0 +1,71 @@
+CREDENCIALES DE ACCESO AL SISTEMA MORA DE TITULACIÓN
+================================================
+
+Administrador: 1
+Vocales: 10 (uno por carrera)
+Asesores: 25
+Asesorados: 25 (no inician sesiÃ³n; su sÃ­nodo lo asignan los vocales)
+
+Las contraseÃ±as son por rol de las cuentas de ejemplo.
+
+
+ADMINISTRADOR
+--------------------------------------------------
+Correo: admin@escuela.mx
+ContraseÃ±a: admin123
+Nombre: CoordinaciÃ³n de TitulaciÃ³n
+
+
+VOCALES (contraseÃ±a para todos: vocal123)
+--------------------------------------------------
+Martha Villalobos Duarte        IngenierÃ­a en Sistemas Computacionales     martha.villalobos@escuela.mx
+RaÃºl Contreras Fuentes          IngenierÃ­a Industrial                      raul.contreras@escuela.mx
+Guadalupe Herrera SolÃ­s         IngenierÃ­a Civil                           guadalupe.herrera@escuela.mx
+Ernesto CÃ¡zares LimÃ³n           IngenierÃ­a MecatrÃ³nica                     ernesto.cazares@escuela.mx
+Silvia PeÃ±a Navarro             IngenierÃ­a ElectrÃ³nica                     silvia.pena@escuela.mx
+HÃ©ctor Aguilar Zavala           IngenierÃ­a QuÃ­mica                         hector.aguilar@escuela.mx
+RocÃ­o BÃ©jar Lugo                IngenierÃ­a Ambiental                       rocio.bejar@escuela.mx
+Gustavo Quintana RÃ­os           Licenciatura en AdministraciÃ³n             gustavo.quintana@escuela.mx
+Alicia MÃ¡rquez Polo             Licenciatura en ContadurÃ­a                 alicia.marquez@escuela.mx
+Sergio Delgado Bustos           Licenciatura en GestiÃ³n Empresarial        sergio.delgado@escuela.mx
+
+
+ASESORES (contraseÃ±a para todos: asesor123)
+--------------------------------------------------
+Elena RamÃ­rez Soto              elena.ramirez@escuela.mx
+Jorge Salazar Medina            jorge.salazar@escuela.mx
+Laura Espinoza Vega             laura.espinoza@escuela.mx
+AndrÃ©s Castillo Bravo           andres.castillo@escuela.mx
+Patricia Lozano Rey             patricia.lozano@escuela.mx
+Miguel Ãngel Torres Cano        miguel.cano@escuela.mx
+Gabriela Anaya Rueda            gabriela.anaya@escuela.mx
+RubÃ©n OlguÃ­n Peralta            ruben.olguin@escuela.mx
+Carmen Ibarra Ledesma           carmen.ibarra@escuela.mx
+Fernando ZÃ¡rate Montes          fernando.zarate@escuela.mx
+Norma Elizondo Arriaga          norma.elizondo@escuela.mx
+TomÃ¡s BarragÃ¡n Civico           tomas.barragan@escuela.mx
+VerÃ³nica Pineda AlcÃ¡zar         veronica.pineda@escuela.mx
+Ricardo Mendoza Lara            ricardo.mendoza@escuela.mx
+Diana Escalante Prieto          diana.escalante@escuela.mx
+Ã“scar BeltrÃ¡n CuÃ©llar           oscar.beltran@escuela.mx
+LucÃ­a Fonseca Trillo            lucia.fonseca@escuela.mx
+Pablo Heredia SÃ¡enz             pablo.heredia@escuela.mx
+Adriana Rocha VillaseÃ±or        adriana.rocha@escuela.mx
+Emilio Cordero Gaxiola          emilio.cordero@escuela.mx
+Sandra Tovar Benavides          sandra.tovar@escuela.mx
+JuliÃ¡n Peralta Ochoa            julian.peralta@escuela.mx
+MÃ³nica RenterÃ­a Salas           monica.renteria@escuela.mx
+Arturo Zambrano Leal            arturo.zambrano@escuela.mx
+Claudia Verdugo Alamillo        claudia.verdugo@escuela.mx
+
+
+Notas
+--------------------------------------------------
+- Cada asesorado puede tener hasta 4 sinodales con los puestos:
+  Presidente, Vocal, Secretario y Suplente.
+- Los asesorados se crean sin sÃ­nodo; los vocales asignan los
+  puestos desde la pantalla "AsignaciÃ³n del sÃ­nodo".
+- Las nuevas cuentas creadas desde el sistema generan su propia
+  contraseÃ±a automÃ¡ticamente (se muestra al crearlas).
+- Si las pantallas muestran datos viejos, usa el botÃ³n
+  "Restablecer datos de prueba" en la pantalla de login.

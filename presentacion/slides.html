@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Automatización del proceso de titulación</title>
+<style>
+  @font-face {
+    font-family: 'IBM Plex Sans';
+    src: url('fuentes/ibm-plex-sans-latin-wght-normal.woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+  }
+  @page { size: 1280px 720px; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  html, body { font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif; color: #1e2430; }
+
+  .diapo {
+    width: 1280px; height: 720px;
+    position: relative; overflow: hidden;
+    page-break-after: always;
+    background: #fdfdfb;
+  }
+  .diapo:last-child { page-break-after: auto; }
+
+  .kicker { font-size: 12.5px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #2b4c7e; }
+  h1 { font-size: 54px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.08; }
+  h2 { font-size: 30px; font-weight: 700; letter-spacing: -0.015em; }
+  .sub { font-size: 15px; color: #5c6472; line-height: 1.5; }
+
+  .marco { border-radius: 12px; overflow: hidden; border: 1px solid #e4e2da; box-shadow: 0 14px 34px rgba(30, 42, 66, .12); background: #fff; }
+  .marco img { width: 100%; display: block; }
+
+  ul.lista { list-style: none; }
+  ul.lista li { position: relative; padding-left: 20px; font-size: 14.5px; line-height: 1.45; color: #333a47; margin-bottom: 12px; }
+  ul.lista li::before { content: ''; position: absolute; left: 0; top: 7px; width: 9px; height: 9px; border-radius: 3px; background: #2b4c7e; }
+  ul.lista li strong { color: #1e2430; }
+
+  .encabezado { display: flex; align-items: baseline; justify-content: space-between; padding: 44px 64px 0; }
+  .encabezado .rol { font-size: 12.5px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #8a92a2; }
+  .cuerpo { padding: 14px 64px 0; }
+  .pie { position: absolute; bottom: 24px; left: 64px; right: 64px; display: flex; justify-content: space-between; font-size: 11px; color: #9aa1af; }
+
+  .divisor { background: #2b4c7e; color: #fff; display: flex; flex-direction: column; justify-content: center; padding: 0 100px; }
+  .divisor .numero { font-size: 120px; font-weight: 700; line-height: 1; opacity: .22; letter-spacing: -0.03em; }
+  .divisor h2 { font-size: 56px; color: #fff; margin-top: 6px; }
+  .divisor .lista li { color: #d4dcec; }
+  .divisor .lista li::before { background: #9fc0e8; }
+  .divisor .lista li strong { color: #fff; }
+
+  .chips { display: flex; gap: 10px; margin-top: 18px; }
+  .chip { font-size: 12.5px; font-weight: 600; padding: 7px 14px; border-radius: 999px; }
+  .chip.admin { background: #2b4c7e; color: #fff; }
+  .chip.vocal { background: #e1eee5; color: #2f5d3f; }
+  .chip.asesor { background: #f9f0da; color: #7a5a17; }
+
+  .tarjetas { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-top: 26px; }
+  .tarjeta { background: #fff; border: 1px solid #e4e2da; border-radius: 14px; padding: 22px; }
+  .tarjeta h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+  .tarjeta p { font-size: 13.5px; color: #5c6472; line-height: 1.5; }
+
+  .tabla-turnos { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13.5px; }
+  .tabla-turnos th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .08em; color: #8a92a2; padding: 7px 10px; border-bottom: 2px solid #e4e2da; }
+  .tabla-turnos td { padding: 8px 10px; border-bottom: 1px solid #eceae2; }
+  .tabla-turnos td.horas { font-variant-numeric: tabular-nums; color: #2b4c7e; font-weight: 600; }
+
+  .flujo { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 24px; }
+  .paso { background: #fff; border: 1px solid #e4e2da; border-radius: 12px; padding: 16px 14px; position: relative; }
+  .paso .n { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; background: #2b4c7e; color: #fff; font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+  .paso p { font-size: 12.5px; line-height: 1.4; color: #333a47; }
+  .paso strong { display: block; margin-bottom: 4px; font-size: 13px; }
+
+  .dos { display: grid; grid-template-columns: 400px 1fr; gap: 34px; align-items: start; }
+  .dos.inversa { grid-template-columns: 1fr 400px; }
+  .columna-imagenes { display: grid; gap: 18px; }
+</style>
+</head>
+<body>
+
+<!-- 1 · Portada -->
+<div class="diapo">
+  <div style="position:absolute; inset:0; background:#2b4c7e;"></div>
+  <div style="position:absolute; right:-140px; top:-140px; width:460px; height:460px; border-radius:50%; background:rgba(255,255,255,.06);"></div>
+  <div style="position:absolute; right:60px; bottom:-180px; width:380px; height:380px; border-radius:50%; background:rgba(255,255,255,.05);"></div>
+  <div style="position:relative; padding:120px 100px; color:#fff;">
+    <p class="kicker" style="color:#9fc0e8;">Escuela Superior · Presentación de la aplicación</p>
+    <h1 style="color:#fff; margin-top:18px; max-width:820px;">Sistema Mora<br>de titulación</h1>
+    <p style="margin-top:22px; max-width:600px; font-size:17px; line-height:1.55; color:#c9d8ec;">
+      Automatización del proceso de titulación: expedientes digitales, sínodos y
+      exámenes profesionales con turnos matutino, vespertino y sabatino, en una
+      sola aplicación para tres roles.
+    </p>
+    <div class="chips">
+      <span class="chip" style="background:rgba(255,255,255,.14); color:#fff;">Coordinación</span>
+      <span class="chip" style="background:rgba(255,255,255,.14); color:#fff;">Vocales de carrera</span>
+      <span class="chip" style="background:rgba(255,255,255,.14); color:#fff;">Asesores</span>
+    </div>
+    <p style="margin-top:56px; font-size:12.5px; color:#8fa8c9;">Octubre de 2026 · Presentación de la aplicación</p>
+  </div>
+</div>
+
+<!-- 2 · ¿Qué hace? -->
+<div class="diapo">
+  <div class="encabezado">
+    <div>
+      <p class="kicker">Visión general</p>
+      <h2 style="margin-top:6px;">¿Qué hace la aplicación?</h2>
+    </div>
+    <p class="rol">Todo el proceso, en un solo lugar</p>
+  </div>
+  <div class="cuerpo dos">
+    <ul class="lista" style="margin-top:10px;">
+      <li><strong>Expediente digital por asesorado:</strong> revisiones con documento Word o PDF, folios numerados y notas del veredicto.</li>
+      <li><strong>Sínodos por carrera:</strong> presidente, vocal, secretario y suplente para cada asesorado.</li>
+      <li><strong>Exámenes profesionales:</strong> calendario por salas con turnos fijos y horarios que se bloquean al asignarse.</li>
+      <li><strong>Notificaciones automáticas:</strong> cada asignación, veredicto o solicitud avisa a quien corresponda.</li>
+      <li><strong>Datos en el navegador:</strong> no requiere servidores; las cuentas de prueba están listas para demostrar.</li>
+    </ul>
+    <div>
+      <div class="tarjetas" style="grid-template-columns:1fr; margin-top:0; gap:14px;">
+        <div class="tarjeta" style="border-left:4px solid #2b4c7e;">
+          <h3>Coordinación (administrador)</h3>
+          <p>Da de alta vocales, asesores y asesorados; decide las bajas y arma el calendario de exámenes.</p>
+        </div>
+        <div class="tarjeta" style="border-left:4px solid #5a8a63;">
+          <h3>Vocal de carrera</h3>
+          <p>Asigna el sínodo de sus asesorados y les asigna su examen en los horarios disponibles.</p>
+        </div>
+        <div class="tarjeta" style="border-left:4px solid #c9a038;">
+          <h3>Asesor</h3>
+          <p>Sube las revisiones de cada asesorado, consulta notas y da seguimiento al expediente.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pie"><span>Sistema Mora de titulación</span><span>2</span></div>
+</div>
+
+<!-- 3 · Divisor Administrador -->
+<div class="diapo divisor">
+  <p class="kicker" style="color:#9fc0e8;">Sección 1 de 3</p>
+  <div class="numero">01</div>
+  <h2>Administración de titulación</h2>
+  <p style="margin-top:14px; max-width:640px; font-size:16px; line-height:1.55; color:#c9d8ec;">
+    La vista de Coordinación: control total de cuentas, expedientes, bajas y del
+    proceso de exámenes profesionales.
+  </p>
+  <ul class="lista" style="margin-top:26px; columns:2; column-gap:48px; max-width:820px;">
+    <li><strong>Resumen</strong> con cifras clave y pendientes</li>
+    <li><strong>Vocales</strong> por carrera</li>
+    <li><strong>Asesores</strong> y sus grupos</li>
+    <li><strong>Asesorados</strong> y expedientes</li>
+    <li><strong>Exámenes</strong> por turnos</li>
+    <li><strong>Solicitudes de baja</strong></li>
+  </ul>
+</div>
+
+<!-- 4 · Admin Resumen -->
+<div class="diapo">
+  <div class="encabezado">
+    <div>
+      <p class="kicker">Sección 1 · Administración</p>
+      <h2 style="margin-top:6px;">Resumen: todo lo que importa, en una pantalla</h2>
+    </div>
+  </div>
+  <div class="cuerpo dos">
+    <ul class="lista" style="margin-top:8px;">
+      <li><strong>Cifras en vivo:</strong> vocales, asesores, asesorados activos y bajas pendientes.</li>
+      <li><strong>Solicitudes de baja</strong> sin resolver, con acceso directo a decidir.</li>
+      <li><strong>Revisiones por revisar</strong> que esperan veredicto de Coordinación.</li>
+      <li><strong>Actividad reciente:</strong> los últimos avisos recibidos.</li>
+      <li>Accesos rápidos a todos los módulos desde el menú lateral.</li>
+    </ul>
+    <div class="marco"><img src="capturas/02-admin-resumen.png" alt="Resumen del administrador"></div>
+  </div>
+  <div class="pie"><span>Sección 1 · Administración</span><span>4</span></div>
+</div>
+
+<!-- 5 · Admin Vocales y Asesores -->
+<div class="diapo">
+  <div class="encabezado">
+    <div>
+      <p class="kicker">Sección 1 · Administración</p>
+      <h2 style="margin-top:6px;">Cuentas: vocales y asesores</h2>
+    </div>
+  </div>
+  <div class="cuerpo" style="padding-top:18px;">
+    <ul class="lista" style="margin-bottom:20px;">
+      <li><strong>Nuevo vocal</strong> con su carrera; la contraseña se genera automáticamente y se entrega lista para compartir.</li>
+      <li>Cada vocal coordina <strong>una sola carrera</strong>: ve y gestiona únicamente a sus asesorados.</li>
+      <li>Los <strong>asesores</strong> se crean igual; desde su perfil se ven sus asesorados y sus puestos en los sínodos.</li>
+    </ul>
+    <div class="columna-imagenes" style="grid-template-columns:1fr 1fr;">
+      <div class="marco"><img src="capturas/03-admin-vocales.png" alt="Vocales"></div>
+      <div class="marco"><img src="capturas/04-admin-asesores.png" alt="Asesores"></div>
+    </div>
+  </div>
+  <div class="pie"><span>Sección 1 · Administración</span><span>5</span></div>
+</div>
+
+<!-- 6 · Admin Asesorados y expediente -->
+<div class="diapo">
+  <div class="encabezado">
+    <div>
+      <p class="kicker">Sección 1 · Administración</p>
+      <h2 style="margin-top:6px;">Asesorados y su expediente</h2>
+    </div>
+  </div>
+  <div class="cuerpo" style="padding-top:16px;">
+    <ul class="lista" style="margin-bottom:16px;">
+      <li style="display:inline-block; width:49%;">Alta de asesorados con <strong>matrícula, correo y carrera</strong>. El expediente muestra el <strong>sínodo completo</strong>: presidente, vocal, secretario y suplente.</li>
+      <li style="display:inline-block; width:49%;"><strong>Historial de revisiones</strong> como folios numerados, con la nota de cada veredicto. Estado visible: activo o con baja pendiente.</li>
+    </ul>
+    <div class="columna-imagenes" style="grid-template-columns:1fr 1fr;">
+      <div class="marco"><img src="capturas/05-admin-asesorados.png" alt="Asesorados"></div>
+      <div class="marco"><img src="capturas/06-admin-perfil-asesorado.png" alt="Expediente"></div>
+    </div>
+  </div>
+  <div class="pie"><span>Sección 1 · Administración</span><span>6</span></div>
+</div>
+
+<!-- 7 · Admin Revisiones y bajas -->
+<div class="diapo">
+  <div class="encabezado">
+    <div>
+      <p class="kicker">Sección 1 · Administración</p>
+      <h2 style="margin-top:6px;">Veredictos y solicitudes de baja</h2>
+    </div>
+  </div>
+  <div class="cuerpo" style="padding-top:16px;">
+    <ul class="lista" style="margin-bottom:16px;">
+      <li style="display:inline-block; width:49%;">Cada revisión se marca como <strong>aceptada, con observaciones o rechazada</strong>, con nota justificada; llega al asesor <strong>en automático</strong> y queda en el expediente.</li>
+      <li style="display:inline-block; width:49%;">En las bajas: <strong>aceptar elimina</strong> el asesorado con sus documentos; <strong>rechazar lo conserva</strong>. Historial con quién y cuándo resolvió cada una.</li>
+    </ul>
+    <div class="columna-imagenes" style="grid-template-columns:1fr 1fr;">
+      <div class="marco"><img src="capturas/07-admin-revision-dialogo.png" alt="Veredicto de revisión"></div>
+      <div class="marco"><img src="capturas/08-admin-solicitudes.png" alt="Solicitudes de baja"></div>
+    </div>
+  </div>
+  <div class="pie"><span>Sección 1 · Administración</span><span>7</span></div>
+</div>
+
+<!-- 8 · Admin Exámenes: creación por turnos -->
+<div class="diapo">
+  <div class="encabezado">
+    <div>
+      <p class="kicker">Sección 1 · Administración</p>
+      <h2 style="margin-top:6px;">Exámenes: horarios por turnos</h2>
+    </div>
+  </div>
+  <div class="cuerpo dos">
+    <div style="margin-top:8px;">
+      <ul class="lista">
+        <li>Coordinación solo elige las <strong>fechas del proceso</strong> y sus salas; los horarios se generan según turnos fijos.</li>
+        <li>Cada examen dura <strong>exactamente 2 horas</strong>; los domingos no hay horarios.</li>
+        <li>Cada fecha y turno se crea <strong>en todas las salas</strong>.</li>
+      </ul>
+      <table class="tabla-turnos">
+        <tr><th>Turno</th><th>Ventana</th><th>Horarios de inicio</th></tr>
+        <tr><td>Matutino (lun–vie)</td><td>07:00–13:00</td><td class="horas">07:00 · 09:00 · 11:00</td></tr>
+        <tr><td>Vespertino (lun–vie)</td><td>14:00–20:00</td><td class="horas">14:00 · 16:00 · 18:00</td></tr>
+        <tr><td>Sábado</td><td>08:00–14:00</td><td class="horas">08:00 · 10:00 · 12:00</td></tr>
+      </table>
+    </div>
+    <div class="marco"><img src="capturas/01-admin-examenes-borrador.png" alt="Creación de horarios por turnos"></div>
+  </div>
+  <div class="pie"><span>Sección 1 · Administración</span><span>8</span></div>
+</div>
+
+<!-- 9 · Admin Exámenes: proceso publicado -->
+<div class="diapo">
+  <div class="encabezado">
+    <div>
+      <p class="kicker">Sección 1 · Administración</p>
+      <h2 style="margin-top:6px;">Exámenes: el proceso publicado</h2>
+    </div>
+  </div>
+  <div class="cuerpo dos">
+    <ul class="lista" style="margin-top:8px;">
+      <li><strong>Guardar proceso:</strong> se publica el calendario con una fecha de apertura de asignación.</li>
+      <li>Puede <strong>abrir o cerrar de golpe</strong> cuando lo necesite la Coordinación.</li>
+      <li>Calendario por salas con el estado de cada horario: disponible u ocupado.</li>
+      <li><strong>Borrar proceso</strong> libera los exámenes asignados, avisa a los vocales y deja los exámenes pendientes de reasignación.</li>
+    </ul>
+    <div class="marco"><img src="capturas/10-admin-examenes-proceso.png" alt="Proceso de exámenes publicado"></div>
+  </div>
+  <div class="pie"><span>Sección 1 · Administración</span><span>9</span></div>
+</div>
+
+<!-- 10 · Divisor Vocal -->
+<div class="diapo divisor">
+  <p class="kicker" style="color:#9fc0e8;">Sección 2 de 3</p>
+  <div class="numero">02</div>
+  <h2>Vocales de carrera</h2>
+  <p style="margin-top:14px; max-width:640px; font-size:16px; line-height:1.55; color:#c9d8ec;">
+    Cada vocal coordina su carrera: conforma los sínodos, asigna los exámenes
+    profesionales y da seguimiento a sus asesorados.
+  </p>
+  <ul class="lista" style="margin-top:26px; columns:2; column-gap:48px; max-width:820px;">
+    <li><strong>Resumen</strong> de su carrera</li>
+    <li><strong>Asesorados</strong> de su carrera</li>
+    <li><strong>Asignación</strong> del sínodo</li>
+    <li><strong>Exámenes</strong> con turno y sala</li>
+    <li><strong>Notificaciones</strong> automáticas</li>
+  </ul>
+</div>
+
+<!-- 11 · Vocal Resumen, asesorados, asignación -->
+<div class="diapo">
+  <div class="encabezado">
+    <div>
+      <p class="kicker">Sección 2 · Vocales</p>
+      <h2 style="margin-top:6px;">Su carrera, siempre enfocada</h2>
+    </div>
+  </div>
+  <div class="cuerpo" style="padding-top:18px;">
+    <ul class="lista" style="margin-bottom:20px;">
+      <li>Ven <strong>solo lo de su carrera</strong>: asesorados, sínodos y calendario.</li>
+      <li><strong>Asignación del sínodo:</strong> eligen asesor para cada puesto; si un asesor queda repetido a la misma hora de examen, el sistema lo impide.</li>
+      <li>Guardar cambios <strong>notifica a cada asesor</strong> al instante.</li>
+    </ul>
+    <div class="columna-imagenes" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="marco"><img src="capturas/11-vocal-resumen.png" alt="Resumen vocal"></div>
+      <div class="marco"><img src="capturas/12-vocal-asesorados.png" alt="Asesorados del vocal"></div>
+      <div class="marco"><img src="capturas/13-vocal-asignacion.png" alt="Asignación del sínodo"></div>
+    </div>
+  </div>
+  <div class="pie"><span>Sección 2 · Vocales</span><span>11</span></div>
+</div>
+
+<!-- 12 · Vocal Exámenes -->
+<div class="diapo">
+  <div class="encabezado">
+    <div>
+      <p class="kicker">Sección 2 · Vocales</p>
+      <h2 style="margin-top:6px;">Asignar exámenes sin conflictos</h2>
+    </div>
+  </div>
+  <div class="cuerpo" style="padding-top:16px;">
+    <ul class="lista" style="margin-bottom:16px;">
+      <li style="display:inline-block; width:49%;">El calendario muestra los horarios publicados por Coordinación, <strong>con su turno y su sala</strong>. En cada horario libre, el vocal asigna a <strong>un asesorado de su carrera</strong>.</li>
+      <li style="display:inline-block; width:49%;"><strong>Anti-conflictos:</strong> no se permite si un sinodal del asesorado ya tiene examen a esa hora. Un horario ocupado <strong>se bloquea para todos</strong>; el vocal puede liberar el que él mismo asignó.</li>
+    </ul>
+    <div class="columna-imagenes" style="grid-template-columns:1fr 1fr;">
+      <div class="marco"><img src="capturas/14-vocal-examenes.png" alt="Calendario del vocal"></div>
+      <div class="marco"><img src="capturas/15-vocal-examenes-dialogo.png" alt="Diálogo de asignación"></div>
+    </div>
+  </div>
+  <div class="pie"><span>Sección 2 · Vocales</span><span>12</span></div>
+</div>
+
+<!-- 13 · Divisor Asesor -->
+<div class="diapo divisor">
+  <p class="kicker" style="color:#9fc0e8;">Sección 3 de 3</p>
+  <div class="numero">03</div>
+  <h2>Asesores</h2>
+  <p style="margin-top:14px; max-width:640px; font-size:16px; line-height:1.55; color:#c9d8ec;">
+    El asesor documenta cada avance de sus asesorados y consulta las notas que
+    deja Coordinación en cada veredicto.
+  </p>
+  <ul class="lista" style="margin-top:26px; columns:2; column-gap:48px; max-width:820px;">
+    <li><strong>Mis asesorados</strong> con estado de cada expediente</li>
+    <li><strong>Revisiones</strong> con documento Word o PDF</li>
+    <li><strong>Notas</strong> de Coordinación y vocales</li>
+    <li><strong>Solicitudes de baja</strong> con seguimiento</li>
+    <li><strong>Notificaciones</strong> automáticas</li>
+  </ul>
+</div>
+
+<!-- 14 · Asesor -->
+<div class="diapo">
+  <div class="encabezado">
+    <div>
+      <p class="kicker">Sección 3 · Asesores</p>
+      <h2 style="margin-top:6px;">Expedientes y revisiones sin papeleo</h2>
+    </div>
+  </div>
+  <div class="cuerpo" style="padding-top:16px;">
+    <ul class="lista" style="margin-bottom:16px;">
+      <li style="display:inline-block; width:49%;"><strong>Agregar revisión:</strong> describe el avance y sube el documento (Word o PDF, hasta 10 MB). Cada entrega queda como folio y no se puede editar.</li>
+      <li style="display:inline-block; width:49%;">Las <strong>notas del veredicto</strong> se leen bajo cada revisión. El asesor puede <strong>solicitar la baja</strong>; Coordinación la acepta o rechaza.</li>
+    </ul>
+    <div class="columna-imagenes" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="marco"><img src="capturas/17-asesor-inicio.png" alt="Mis asesorados"></div>
+      <div class="marco"><img src="capturas/18-asesor-expediente.png" alt="Expediente del asesorado"></div>
+      <div class="marco"><img src="capturas/19-asesor-revision-dialogo.png" alt="Subir revisión"></div>
+    </div>
+  </div>
+  <div class="pie"><span>Sección 3 · Asesores</span><span>14</span></div>
+</div>
+
+<!-- 15 · Notificaciones -->
+<div class="diapo">
+  <div class="encabezado">
+    <div>
+      <p class="kicker">Comunes a los tres roles</p>
+      <h2 style="margin-top:6px;">Notificaciones: nadie se entera tarde</h2>
+    </div>
+  </div>
+  <div class="cuerpo" style="padding-top:18px;">
+    <ul class="lista" style="margin-bottom:20px;">
+      <li>Cada acción genera un aviso <strong>solo para quien corresponde</strong>: asignaciones de sínodo, exámenes asignados o liberados, veredictos con nota, solicitudes de baja y cambios en el proceso de exámenes.</li>
+      <li>El menú muestra el <strong>contador de no leídas</strong> y la bandeja marca lo nuevo con un punto.</li>
+    </ul>
+    <div class="columna-imagenes" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="marco"><img src="capturas/09-admin-notificaciones.png" alt="Notificaciones de Coordinación"></div>
+      <div class="marco"><img src="capturas/16-vocal-notificaciones.png" alt="Notificaciones del vocal"></div>
+      <div class="marco"><img src="capturas/20-asesor-notificaciones.png" alt="Notificaciones del asesor"></div>
+    </div>
+  </div>
+  <div class="pie"><span>Notificaciones</span><span>15</span></div>
+</div>
+
+<!-- 16 · Cierre -->
+<div class="diapo">
+  <div class="encabezado">
+    <div>
+      <p class="kicker">Cierre</p>
+      <h2 style="margin-top:6px;">Así fluye el proceso completo</h2>
+    </div>
+  </div>
+  <div class="cuerpo">
+    <div class="flujo">
+      <div class="paso"><span class="n">1</span><p><strong>Coordinación da de alta</strong> vocales por carrera, asesores y asesorados.</p></div>
+      <div class="paso"><span class="n">2</span><p><strong>El vocal conforma</strong> el sínodo de cada asesorado y se notifica a los asesores.</p></div>
+      <div class="paso"><span class="n">3</span><p><strong>El asesor sube revisiones</strong> Coordinación emite el veredicto con nota.</p></div>
+      <div class="paso"><span class="n">4</span><p><strong>Coordinación publica</strong> el proceso de exámenes con salas y turnos; los vocales asignan sin conflictos.</p></div>
+      <div class="paso"><span class="n">5</span><p><strong>Notificaciones en cada paso</strong> El expediente queda completo para la titulación.</p></div>
+    </div>
+    <div class="tarjetas" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="tarjeta">
+        <h3>Sin papeleo</h3>
+        <p>Expedientes, folios y notas viven en la aplicación; cada decisión queda registrada.</p>
+      </div>
+      <div class="tarjeta">
+        <h3>Horarios a prueba de choques</h3>
+        <p>Turnos fijos, exámenes de 2 horas y bloqueo automático de horarios y sinodales repetidos.</p>
+      </div>
+      <div class="tarjeta">
+        <h3>Ligera y segura</h3>
+        <p>Corre en el navegador, guarda los datos localmente y restringe cada vista por rol.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pie"><span>Sistema Mora de titulación · Octubre de 2026</span><span>16</span></div>
+</div>
+
+</body>
+</html>

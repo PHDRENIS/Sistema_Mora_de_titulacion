@@ -28,8 +28,9 @@ export function PanelNotificaciones() {
             variant="ghost"
             size="sm"
             disabled={noLeidas === 0}
-            onClick={() => {
-              marcarLeidas(usuario.id)
+            onClick={async () => {
+              const ok = await marcarLeidas()
+              if (!ok) return
               toast.success('Notificaciones marcadas como leídas.')
             }}
           >

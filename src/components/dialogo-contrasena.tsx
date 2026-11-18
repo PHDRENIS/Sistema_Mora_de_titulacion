@@ -6,15 +6,17 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 export function DialogoContrasena({
   abierto,
   onCerrar,
-  nombre,
   correo,
   contrasena,
+  titulo = 'Cuenta creada',
+  descripcion,
 }: {
   abierto: boolean
   onCerrar: () => void
-  nombre: string
   correo: string
   contrasena: string
+  titulo?: string
+  descripcion?: string
 }) {
   const asunto = encodeURIComponent('Acceso al sistema de titulación')
   const cuerpo = encodeURIComponent(
@@ -25,9 +27,9 @@ export function DialogoContrasena({
     <Dialog open={abierto} onOpenChange={(v) => (v ? undefined : onCerrar())}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Cuenta creada</DialogTitle>
+          <DialogTitle>{titulo}</DialogTitle>
           <DialogDescription>
-            La contraseña de {nombre} se generó automáticamente. Solo se muestra esta vez: cópiala o envíala por correo antes de cerrar.
+            {descripcion ?? 'La contraseña se generó de manera aleatoria. Solo se muestra esta vez: cópiala o envíala por correo antes de cerrar.'}
           </DialogDescription>
         </DialogHeader>
         <div className="rounded-lg bg-field px-4 py-3">

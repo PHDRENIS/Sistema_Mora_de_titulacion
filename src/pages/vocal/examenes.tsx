@@ -47,8 +47,8 @@ export default function Examenes() {
           subtitulo: [salaEtiqueta(sala), vocal?.nombre].filter(Boolean).join(' · '),
           onLiberar:
             abierta && slot.asignadoPor === usuario?.id
-              ? () => {
-                  if (liberarExamen(slot.id, usuario?.id ?? '')) toast.success('Horario liberado; vuelve a estar disponible.')
+              ? async () => {
+                  if (await liberarExamen(slot.id)) toast.success('Horario liberado; vuelve a estar disponible.')
                 }
               : undefined,
         }
@@ -75,9 +75,9 @@ export default function Examenes() {
 
   if (!usuario) return null
 
-  const asignar = () => {
+  const asignar = async () => {
     if (!porAsignar || !elegido) return
-    const r = asignarExamen(porAsignar.id, elegido, usuario.id)
+    const r = await asignarExamen(porAsignar.id, elegido)
     if (!r.ok) {
       toast.error(r.error ?? 'No se pudo asignar.')
       return

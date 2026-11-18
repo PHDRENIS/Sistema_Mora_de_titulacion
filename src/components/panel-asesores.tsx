@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search } from 'lucide-react'
+import { KeyRound, Search } from 'lucide-react'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { DialogoContrasena } from '@/components/dialogo-contrasena'
 import { FilaTitulo } from '@/components/fila-titulo'
 import { Vacio } from '@/components/vacio'
 import { NuevaCuentaAsesor } from '@/components/nueva-cuenta-asesor'
@@ -15,7 +18,16 @@ export function PanelAsesores({ baseRuta }: { baseRuta: '/admin' | '/vocal' }) {
   const asesorados = useDB((s) => s.asesorados)
   const solicitudes = useDB((s) => s.solicitudes)
   const revisiones = useDB((s) => s.revisiones)
+  const restablecerContrasena = useDB((s) => s.restablecerContrasena)
   const [busqueda, setBusqueda] = useState('')
+  const [creada, setCreada] = useState<{ nombre: string; correo: string; contrasena: string } | null>(null)
+
+  const restablecer = async (id: string) => {
+    const user = await restablecerContrasena(id)
+    if (!user) return
+    toast.success('Contraseña restablecida.')
+    setCreada({ nombre: user.nombre, correo: user.correo, contrasena: user.contrasena ?? '' })
+  }
 
   const asesores = useMemo(() => {
     const q = busqueda.trim().toLowerCase()
@@ -55,6 +67,7 @@ export function PanelAsesores({ baseRuta }: { baseRuta: '/admin' | '/vocal' }) {
                   <TableHead>Correo</TableHead>
                   <TableHead className="text-right">Asesorados</TableHead>
                   <TableHead className="text-right">Revisiones por revisar</TableHead>
+                  {baseRuta === '/admin' ? <TableHead className="w-10" /> : null}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -69,6 +82,22 @@ export function PanelAsesores({ baseRuta }: { baseRuta: '/admin' | '/vocal' }) {
                       <TableCell className="text-muted-foreground">{a.correo}</TableCell>
                       <TableCell className="num text-right">{mios.length}</TableCell>
                       <TableCell className="num text-right">{pend}</TableCell>
+                      {baseRuta === '/admin' ? (
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title={`Restablecer la contraseña de ${a.nombre}`}
+                            aria-label="Restablecer contraseña"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              restablecer(a.id)
+                            }}
+                          >
+                            <KeyRound />
+                          </Button>
+                        </TableCell>
+                      ) : null}
                     </TableRow>
                   )
                 })}
@@ -77,6 +106,14 @@ export function PanelAsesores({ baseRuta }: { baseRuta: '/admin' | '/vocal' }) {
           )}
         </CardContent>
       </Card>
+
+      <DialogoContrasena
+        abierto={creada !== null}
+        onCerrar={() => setCreada(null)}
+        correo={creada?.correo ?? ''}
+        contrasena={creada?.contrasena ?? ''}
+        titulo="Contraseña restablecida"
+      />
     </>
   )
 }

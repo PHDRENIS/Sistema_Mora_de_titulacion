@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useDB, type Asesorado } from '@/store/db'
+import { useDB } from '@/store/db'
 
 const esquema = z.object({
   nombre: z.string().min(3, 'Escribe el nombre completo.'),
@@ -27,15 +27,15 @@ export function NuevoAsesorado({ carreras, carreraFija }: { carreras: string[]; 
     defaultValues: { nombre: '', matricula: '', correo: '', carrera: carreraFija ?? '' },
   })
 
-  const guardar = (datos: Formulario) => {
+  const guardar = async (datos: Formulario) => {
     const datosFinales: Formulario = carreraFija ? { ...datos, carrera: carreraFija } : datos
-    const nuevo: Omit<Asesorado, 'id' | 'creadoEn' | 'asignaciones'> = {
+    const ok = await crearAsesorado({
       nombre: datosFinales.nombre,
       matricula: datosFinales.matricula,
       correo: datosFinales.correo,
       carrera: datosFinales.carrera,
-    }
-    crearAsesorado(nuevo)
+    })
+    if (!ok) return
     toast.success('Asesorado creado. Los vocales podrán asignar su sínodo desde Asignación.')
     reset({ nombre: '', matricula: '', correo: '', carrera: carreraFija ?? '' })
     setAbierto(false)

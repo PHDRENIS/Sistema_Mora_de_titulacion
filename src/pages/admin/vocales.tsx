@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { Trash2, UserPlus } from 'lucide-react'
+import { KeyRound, Trash2, UserPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -30,9 +30,15 @@ export default function Vocales() {
   const asesorados = useDB((s) => s.asesorados)
   const crearVocal = useDB((s) => s.crearVocal)
   const borrarVocal = useDB((s) => s.borrarVocal)
+  const restablecerContrasena = useDB((s) => s.restablecerContrasena)
   const [abierto, setAbierto] = useState(false)
   const [porBorrar, setPorBorrar] = useState<string | null>(null)
-  const [creada, setCreada] = useState<{ nombre: string; correo: string; contrasena: string } | null>(null)
+  const [creada, setCreada] = useState<{
+    nombre: string
+    correo: string
+    contrasena: string
+    motivo: 'creacion' | 'restablecimiento'
+  } | null>(null)
   const { register, handleSubmit, reset, formState: { errors } } = useForm<Formulario>({
     resolver: zodResolver(esquema),
     defaultValues: { nombre: '', correo: '', carrera: '' },
@@ -42,17 +48,26 @@ export default function Vocales() {
 
   if (!usuario) return null
 
-  const guardar = (datos: Formulario) => {
-    const user = crearVocal(datos)
+  const guardar = async (datos: Formulario) => {
+    const user = await crearVocal(datos)
+    if (!user) return
     toast.success('Vocal creado.')
     reset({ nombre: '', correo: '', carrera: '' })
     setAbierto(false)
-    setCreada({ nombre: user.nombre, correo: user.correo, contrasena: user.contrasena })
+    setCreada({ nombre: user.nombre, correo: user.correo, contrasena: user.contrasena ?? '', motivo: 'creacion' })
   }
 
-  const confirmarBorrado = () => {
+  const restablecer = async (id: string) => {
+    const user = await restablecerContrasena(id)
+    if (!user) return
+    toast.success('Contraseña restablecida.')
+    setCreada({ nombre: user.nombre, correo: user.correo, contrasena: user.contrasena ?? '', motivo: 'restablecimiento' })
+  }
+
+  const confirmarBorrado = async () => {
     if (!porBorrar) return
-    borrarVocal(porBorrar)
+    const ok = await borrarVocal(porBorrar)
+    if (!ok) return
     toast.success('Vocal eliminado.')
     setPorBorrar(null)
   }
@@ -132,9 +147,20 @@ export default function Vocales() {
                       <TableCell className="max-w-48 truncate text-muted-foreground">{v.carrera}</TableCell>
                       <TableCell className="num text-right">{cuenta}</TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon" className="text-bad-ink hover:bg-bad-bg" onClick={() => setPorBorrar(v.id)}>
-                          <Trash2 />
-                        </Button>
+                        <div className="flex justify-end gap-0.5">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title={`Restablecer la contraseña de ${v.nombre}`}
+                            aria-label="Restablecer contraseña"
+                            onClick={() => restablecer(v.id)}
+                          >
+                            <KeyRound />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="text-bad-ink hover:bg-bad-bg" onClick={() => setPorBorrar(v.id)}>
+                            <Trash2 />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   )
@@ -165,9 +191,9 @@ export default function Vocales() {
       <DialogoContrasena
         abierto={creada !== null}
         onCerrar={() => setCreada(null)}
-        nombre={creada?.nombre ?? ''}
         correo={creada?.correo ?? ''}
         contrasena={creada?.contrasena ?? ''}
+        titulo={creada?.motivo === 'restablecimiento' ? 'Contraseña restablecida' : 'Cuenta creada'}
       />
     </>
   )

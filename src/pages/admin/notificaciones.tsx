@@ -4,7 +4,7 @@ import { PanelNotificaciones } from '@/components/panel-notificaciones'
 export default function Notificaciones() {
   return (
     <>
-      <FilaTitulo titulo="Notificaciones" subline="Avisos de solicitudes de baja y resultados de revisiones." />
+      <FilaTitulo titulo="Notificaciones" subline="Avisos de solicitudes de baja, recuperaciones de contraseña y resultados de revisiones." />
       <PanelNotificaciones />
     </>
   )

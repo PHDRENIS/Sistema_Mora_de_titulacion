@@ -62,9 +62,10 @@ export function PanelAsignacion() {
 
   const nombreAsesor = (id: string | undefined) => users.find((u) => u.id === id)?.nombre ?? ''
 
-  const guardar = () => {
+  const guardar = async () => {
     if (cambios.length === 0) return
-    guardarAsignacion(cambios)
+    const ok = await guardarAsignacion(cambios)
+    if (!ok) return
     setElecciones({})
     toast.success('Asignación guardada. Los asesores recibieron su puesto en el sínodo.')
   }

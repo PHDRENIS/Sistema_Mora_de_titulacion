@@ -2,40 +2,40 @@
 @import "tw-animate-css";
 
 :root {
-  --background: #f6f6f3;
-  --foreground: #1c1f24;
+  --background: #f4f5f7;
+  --foreground: #292929;
   --card: #ffffff;
-  --card-foreground: #1c1f24;
+  --card-foreground: #292929;
   --popover: #ffffff;
-  --popover-foreground: #1c1f24;
-  --primary: #2b4c7e;
+  --popover-foreground: #292929;
+  --primary: #005cab;
   --primary-foreground: #ffffff;
-  --secondary: #ebebe5;
-  --secondary-foreground: #1c1f24;
-  --muted: #ebebe5;
-  --muted-foreground: #5b6068;
-  --accent: #ebebe5;
-  --accent-foreground: #1c1f24;
-  --destructive: #9b3d3d;
+  --secondary: #f4f5f7;
+  --secondary-foreground: #292929;
+  --muted: #f4f5f7;
+  --muted-foreground: #696969;
+  --accent: #e7f0f9;
+  --accent-foreground: #004178;
+  --destructive: #f22121;
   --destructive-foreground: #ffffff;
-  --border: #e4e4de;
-  --rule: #f0f0ea;
-  --field: #f3f3ee;
-  --input: #d6d6cf;
-  --ring: #2b4c7e;
-  --ok-bg: #e1eee5;
-  --ok-ink: #2f5d42;
-  --warn-bg: #f9f0da;
-  --warn-ink: #7a5200;
-  --bad-bg: #f8e6e4;
-  --bad-ink: #8c2f2f;
-  --neutral-bg: #eeeeea;
-  --neutral-ink: #5b6068;
+  --border: #e9e9e9;
+  --rule: #f0f0f0;
+  --field: #f4f5f7;
+  --input: #cfcfcf;
+  --ring: #005cab;
+  --ok-bg: #e2f5e9;
+  --ok-ink: #0f5132;
+  --warn-bg: #fdeedd;
+  --warn-ink: #8a5200;
+  --bad-bg: #fde8e8;
+  --bad-ink: #842029;
+  --neutral-bg: #ececec;
+  --neutral-ink: #696969;
   --radius: 0.5rem;
 }
 
 @theme inline {
-  --font-sans: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Noto Sans Variable", ui-sans-serif, system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

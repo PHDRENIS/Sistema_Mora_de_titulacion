@@ -97,8 +97,8 @@ export function PanelExpediente({ baseRuta, puedeRevisar, esAsesor }: { baseRuta
       setDialogoRevision(false)
       setDescripcion('')
       setArchivo(null)
-    } catch {
-      toast.error('No se pudo guardar el archivo.')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'No se pudo guardar el archivo.')
     } finally {
       setSubiendo(false)
     }
@@ -111,13 +111,14 @@ export function PanelExpediente({ baseRuta, puedeRevisar, esAsesor }: { baseRuta
     setNota(rev?.nota ?? '')
   }
 
-  const guardarVeredicto = () => {
+  const guardarVeredicto = async () => {
     if (!revisada) return
     if (estado !== 'aceptada' && nota.trim().length < 5) {
       toast.error('Escribe una nota de al menos 5 caracteres para justificar el veredicto.')
       return
     }
-    revisarRevision(revisada, estado, nota, usuario.id)
+    const ok = await revisarRevision(revisada, estado, nota)
+    if (!ok) return
     toast.success('Revisión actualizada. El asesor recibirá el aviso con tu nota.')
     setRevisada(null)
   }
@@ -288,8 +289,9 @@ export function PanelExpediente({ baseRuta, puedeRevisar, esAsesor }: { baseRuta
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
                 <AlertDialogAction
                   className={cn(buttonVariants({ variant: 'destructive' }), 'bg-card hover:bg-bad-bg')}
-                  onClick={() => {
-                    solicitarBaja(asesorado.id, usuario.id)
+                  onClick={async () => {
+                    const ok = await solicitarBaja(asesorado.id)
+                    if (!ok) return
                     toast.success('Solicitud de baja enviada al administrador.')
                   }}
                 >

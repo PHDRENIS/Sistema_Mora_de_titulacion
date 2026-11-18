@@ -27,12 +27,13 @@ export function NuevaCuentaAsesor({ etiqueta = 'Nuevo asesor' }: { etiqueta?: st
     defaultValues: { nombre: '', correo: '' },
   })
 
-  const guardar = (datos: Formulario) => {
-    const user = crearAsesor(datos)
+  const guardar = async (datos: Formulario) => {
+    const user = await crearAsesor(datos)
+    if (!user) return
     toast.success('Asesor creado.')
     reset()
     setAbierto(false)
-    setCreada({ nombre: user.nombre, correo: user.correo, contrasena: user.contrasena })
+    setCreada({ nombre: user.nombre, correo: user.correo, contrasena: user.contrasena ?? '' })
   }
 
   return (
@@ -72,7 +73,6 @@ export function NuevaCuentaAsesor({ etiqueta = 'Nuevo asesor' }: { etiqueta?: st
       <DialogoContrasena
         abierto={creada !== null}
         onCerrar={() => setCreada(null)}
-        nombre={creada?.nombre ?? ''}
         correo={creada?.correo ?? ''}
         contrasena={creada?.contrasena ?? ''}
       />

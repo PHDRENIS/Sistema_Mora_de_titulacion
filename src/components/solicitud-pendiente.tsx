@@ -11,9 +11,10 @@ export function SolicitudPendiente({ solicitud, soloVer = false }: { solicitud: 
   const asesor = useDB((s) => s.users.find((u) => u.id === solicitud.solicitadoPor))
   const asesorado = useDB((s) => s.asesorados.find((a) => a.id === solicitud.asesoradoId))
 
-  const resolver = (aceptar: boolean) => {
+  const resolver = async (aceptar: boolean) => {
     if (!usuario) return
-    resolverSolicitud(solicitud.id, aceptar, usuario.id)
+    const ok = await resolverSolicitud(solicitud.id, aceptar)
+    if (!ok) return
     toast.success(aceptar ? 'Baja aceptada. El asesorado se eliminó.' : 'Baja rechazada. El asesorado sigue activo.')
   }
 

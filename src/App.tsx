@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { AdminLayout, AsesorLayout, VocalLayout, RequiereRol } from '@/layouts'
 import Login from '@/pages/login'
+import { useDB, useUsuarioActual, rutaPorRol } from '@/store/db'
 import AdminResumen from '@/pages/admin/resumen'
 import AdminVocales from '@/pages/admin/vocales'
 import AdminAsesores from '@/pages/admin/asesores'
@@ -21,7 +23,6 @@ import VocalExamenes from '@/pages/vocal/examenes'
 import AsesorInicio from '@/pages/asesor/inicio'
 import AsesorPerfilAsesorado from '@/pages/asesor/perfil-asesorado'
 import AsesorNotificaciones from '@/pages/asesor/notificaciones'
-import { useUsuarioActual, rutaPorRol } from '@/store/db'
 
 function Inicio() {
   const usuario = useUsuarioActual()
@@ -30,6 +31,12 @@ function Inicio() {
 }
 
 export default function App() {
+  useEffect(() => {
+    void useDB.getState().sincronizar()
+    const intervalo = setInterval(() => void useDB.getState().sincronizar(), 25000)
+    return () => clearInterval(intervalo)
+  }, [])
+
   return (
     <Routes>
       <Route path="/" element={<Inicio />} />

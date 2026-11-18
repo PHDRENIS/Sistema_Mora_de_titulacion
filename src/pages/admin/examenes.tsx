@@ -54,8 +54,8 @@ export default function Examenes() {
             slot,
             modo: 'libre',
             onEliminar: enBorrador
-              ? () => {
-                  if (eliminarSlot(slot.id)) toast.success('Horario eliminado.')
+              ? async () => {
+                  if (await eliminarSlot(slot.id)) toast.success('Horario eliminado.')
                 }
               : undefined,
           }
@@ -68,44 +68,44 @@ export default function Examenes() {
           modo: 'detalle',
           titulo: asesorado?.nombre ?? 'Asesorado dado de baja',
           subtitulo: [salaEtiqueta(sala), vocal?.nombre].filter(Boolean).join(' · '),
-          onLiberar: () => {
-            if (liberarExamen(slot.id, usuario?.id ?? '')) toast.success('Horario liberado; vuelve a estar disponible.')
+          onLiberar: async () => {
+            if (await liberarExamen(slot.id)) toast.success('Horario liberado; vuelve a estar disponible.')
           },
         }
       }),
-    [slots, asesorados, users, salas, usuario, enBorrador, eliminarSlot, liberarExamen],
+    [slots, asesorados, users, salas, enBorrador, eliminarSlot, liberarExamen],
   )
 
   if (!usuario) return null
 
-  const generar = () => {
+  const generar = async () => {
     if (!enBorrador) return toast.error('El proceso está guardado; bórralo para definir otro calendario.')
     if (salas.length === 0) return toast.error('Crea al menos una sala antes de generar horarios.')
     if (!fechaInicio || !fechaFin) return toast.error('Elige las fechas de inicio y fin del proceso.')
     if (fechaInicio > fechaFin) return toast.error('La fecha de inicio debe ser anterior o igual a la de fin.')
     const dias = Math.round((new Date(fechaFin).getTime() - new Date(fechaInicio).getTime()) / 86400000) + 1
     if (dias > 92) return toast.error('El rango no puede exceder 92 días.')
-    const creados = generarSlots(fechaInicio, fechaFin)
+    const creados = await generarSlots(fechaInicio, fechaFin)
+    if (creados < 0) return
     if (creados === 0) toast.info('No se creó ningún horario nuevo; ya existían para esas fechas y salas.')
     else toast.success(`Se generaron ${creados} horarios (${creados / salas.length} por sala).`)
   }
 
-  const agregarSala = () => {
+  const agregarSala = async () => {
     if (!nuevaSala.trim()) return toast.error('Escribe el nombre de la sala.')
-    const antes = new Set(salas.map((x) => x.id))
-    crearSala(nuevaSala)
-    const nueva = useDB.getState().salas.find((x) => !antes.has(x.id))
-    if (!nueva) return toast.error('Ya existe una sala con ese nombre.')
+    const nueva = await crearSala(nuevaSala)
+    if (!nueva) return
     setNuevaSala('')
     setSalaActiva(nueva.id)
     toast.success('Sala agregada.')
   }
 
-  const guardarNombreSala = () => {
+  const guardarNombreSala = async () => {
     if (!editandoSala) return
-    renombrarSala(editandoSala, nombreSala)
-    setEditandoSala(null)
-    setNombreSala('')
+    if (await renombrarSala(editandoSala, nombreSala)) {
+      setEditandoSala(null)
+      setNombreSala('')
+    }
   }
 
   const abrirDialogoGuardar = () => {
@@ -115,10 +115,11 @@ export default function Examenes() {
     setPorGuardar(true)
   }
 
-  const confirmarGuardar = () => {
+  const confirmarGuardar = async () => {
     if (!apertura) return toast.error('Elige la fecha y hora en que abre la asignación.')
     if (new Date(apertura).getTime() <= Date.now()) return toast.error('La apertura debe ser en el futuro.')
-    guardarProceso(new Date(apertura).toISOString())
+    const ok = await guardarProceso(new Date(apertura).toISOString())
+    if (!ok) return
     setPorGuardar(false)
     toast.success('Proceso guardado. Los vocales ya pueden ver el calendario y la fecha de apertura.')
   }
@@ -154,9 +155,8 @@ export default function Examenes() {
             ) : abierta ? (
               <Button
                 variant="outline"
-                onClick={() => {
-                  cerrarProceso()
-                  toast.success('Proceso cerrado. Los vocales ya no pueden asignar ni liberar.')
+                onClick={async () => {
+                  if (await cerrarProceso()) toast.success('Proceso cerrado. Los vocales ya no pueden asignar ni liberar.')
                 }}
               >
                 <Lock />
@@ -165,9 +165,8 @@ export default function Examenes() {
             ) : (
               <Button
                 variant="outline"
-                onClick={() => {
-                  abrirProceso()
-                  toast.success('Proceso abierto. Los vocales ya pueden asignar.')
+                onClick={async () => {
+                  if (await abrirProceso()) toast.success('Proceso abierto. Los vocales ya pueden asignar.')
                 }}
               >
                 <LockOpen />
@@ -254,9 +253,8 @@ export default function Examenes() {
                               variant="ghost"
                               size="icon"
                               className="size-7 text-bad-ink hover:bg-bad-bg"
-                              onClick={() => {
-                                if (eliminarSala(sala.id)) toast.success('Sala eliminada.')
-                                else toast.error('No se puede eliminar: el proceso ya está guardado o la sala tiene horarios.')
+                              onClick={async () => {
+                                if (await eliminarSala(sala.id)) toast.success('Sala eliminada.')
                               }}
                             >
                               <Trash2 />
@@ -340,8 +338,8 @@ export default function Examenes() {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               className="bg-bad-ink text-white hover:bg-bad-ink/90"
-              onClick={() => {
-                borrarProceso()
+              onClick={async () => {
+                if (!(await borrarProceso())) return
                 setPorBorrar(false)
                 toast.success('Proceso borrado. Los exámenes asignados quedaron sin fecha y los vocales fueron notificados.')
               }}

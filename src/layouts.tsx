@@ -7,7 +7,9 @@ import { useUsuarioActual, useDB, rutaPorRol } from '@/store/db'
 export type RolRuta = 'admin' | 'vocal' | 'asesor'
 
 export function RequiereRol({ rol, children }: { rol: RolRuta; children: ReactNode }) {
+  const listo = useDB((s) => s.listo)
   const usuario = useUsuarioActual()
+  if (!listo) return null
   if (!usuario) return <Navigate to="/login" replace />
   if (usuario.rol !== rol) return <Navigate to={rutaPorRol(usuario.rol)} replace />
   return <>{children}</>

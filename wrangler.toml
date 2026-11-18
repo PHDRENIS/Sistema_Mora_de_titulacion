@@ -1,3 +1,16 @@
 name = "sistema-mora-de-titulacion"
 compatibility_date = "2026-01-01"
-pages_build_output_dir = "dist"
+main = "worker.ts"
+
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sistema-mora"
+database_id = "9ebe8291-7f40-432e-a2d6-38086e28cc57"
+
+[[r2_buckets]]
+binding = "ARCHIVOS"
+bucket_name = "sistema-mora-archivos"

@@ -12,7 +12,7 @@ Sistema de gestión del proceso de titulación para la Universidad Pedagógica N
 
 Al crear una cuenta (vocal o asesor) se genera una contraseña aleatoria que se muestra una sola vez. Cualquier cuenta puede cambiar su contraseña desde el menú lateral.
 
-## Despliegue en Cloudflare Pages
+## Despliegue en Cloudflare (Workers con assets estáticos)
 
 ### 1. Subir el código a GitHub
 
@@ -25,53 +25,40 @@ git push
 
 > `USUARIOS.txt`, `presentacion/`, `.taste-skill/` y `.env*` ya están en `.gitignore`; no se publican.
 
-### 2. Crear el proyecto en Cloudflare
-
-1. En el panel de Cloudflare: **Workers & Pages → Create → Pages → Connect to Git**; elige el repositorio.
-2. Configuración de build:
-   - **Build command:** `npm run build`
-   - **Build output directory:** `dist`
-   - **Variable de entorno:** `NODE_VERSION = 22` (no definas `NODE_ENV=production`; impediría instalar devDependencies).
-3. Despliega. La primera vez fallará hasta crear las bindings del paso 3.
-
-### 3. Crear la base de datos y el bucket
+### 2. Crear la base de datos y el bucket
 
 ```powershell
+npx wrangler login
 npx wrangler d1 create sistema-mora
 npx wrangler d1 execute sistema-mora --remote --file=schema.sql
 npx wrangler r2 bucket create sistema-mora-archivos
 ```
 
-### 4. Conectar las bindings
+Si recreas la base de datos, actualiza `database_id` en `wrangler.toml`.
 
-En **Workers & Pages → (tu proyecto) → Settings → Bindings → Add**:
+### 3. Conectar el repositorio en el panel
 
-| Tipo | Nombre de la variable | Valor |
-| --- | --- | --- |
-| D1 database | `DB` | `sistema-mora` |
-| R2 bucket | `ARCHIVOS` | `sistema-mora-archivos` |
+En **Workers & Pages → Create → Connect to Git**, con esta configuración de compilación:
 
-(Opcional, recomendado): una variable o secret llamada `ADMIN_CONTRASENA` con la contraseña inicial del administrador. Si no existe, la contraseña inicial es la documentada en `USUARIOS.txt`.
+- **Comando de compilación:** `npm run build`
+- **Implementar comando:** `npx wrangler deploy`
+- **Variable de entorno:** `NODE_VERSION = 22` (no definas `NODE_ENV=production`)
 
-Vuelve a **Deploy** para que las bindings apliquen.
+Las bindings **no** se configuran en el panel: ya viven en `wrangler.toml` (`DB` → D1 `sistema-mora`, `ARCHIVOS` → R2 `sistema-mora-archivos`) y `npx wrangler deploy` las aplica en cada despliegue.
 
-### 5. Primer acceso
+### 4. Primer acceso
 
-Entra con usuario `admin` y la contraseña inicial. **Cámbiala de inmediato** desde el menú lateral ("Cambiar contraseña").
+Entra con usuario `admin` y la contraseña inicial. **Cámbiala de inmediato** desde el menú lateral ("Cambiar contraseña"). Al primer arranque, el sistema crea sus tablas y la cuenta admin solo (sin datos de ejemplo).
 
 ## Desarrollo local
 
 ```powershell
 npm install
 npm run build
-npx wrangler pages dev dist --d1 DB --r2 ARCHIVOS
+npx wrangler dev --port 8799
 ```
 
-Aplica el esquema local si hace falta:
-
-```powershell
-npx wrangler d1 execute sistema-mora --local --file=schema.sql
-```
+La API queda en `http://127.0.0.1:8799/api/*` y la aplicación en la misma URL, con D1 y R2 locales simulados.
 
 ## Notas de operación
 
